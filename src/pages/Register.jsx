@@ -1,45 +1,92 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Add from "../img/add_img.png";
 import Logo from "../img/logo.jpg";
-import {createUserWithEmailAndPassword } from "firebase/auth";
-import { auth} from "firebase/auth";
+import {createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth,db,storage} from '../firebase';
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { doc, setDoc } from "firebase/firestore"; 
+import { useNavigate, Link} from 'react-router-dom';
 
 const Register = () => {
+  const [err, setErr] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        const Username =e.target[0].value;
-        const email= e.target[1].value;
-        const password = e.target[2].value;
-        const file = e.target[3].files[0];
+  const handleSubmit = async (e) => {
+    setLoading(true);
+    e.preventDefault();
+    const Username = e.target[0].value;
+    const email = e.target[1].value;
+    const password = e.target[2].value;
+    const file = e.target[3].files[0];
 
-        const res=createUserWithEmailAndPassword(auth, email, password)
+    try {
+      //Create user
+      const res = await createUserWithEmailAndPassword(auth, email, password);
+
+      //Create a unique image name
+      const date = new Date().getTime();
+      const storageRef = ref(storage, `${Username + date}`);
+
+      await uploadBytesResumable(storageRef, file).then(() => {
+        getDownloadURL(storageRef).then(async (downloadURL) => {
+          try {
+            //Update profile
+            await updateProfile(res.user, {
+              Username,
+              photoURL: downloadURL,
+            });
+            //create user on firestore
+            await setDoc(doc(db, "users", res.user.uid), {
+              uid: res.user.uid,
+              Username,
+              email,
+              photoURL: downloadURL,
+            });
+
+            //create empty user chats on firestore
+            await setDoc(doc(db, "userChats", res.user.uid), {});
+            navigate("/");
+          } catch (err) {
+            console.log(err);
+            setErr(true);
+            setLoading(false);
+          }
+        });
+      });
+    } catch (err) {
+      setErr(true);
+      setLoading(false);
     }
+  };
 
-
-    return (
-        <div className='formContainer'>
-            <div className='formWrapper'>
-                <div className="header">
-                  <img src={Logo} alt='chattie logo' />
-                  <span className='logo'>Chattie</span>
-                </div>
-                <span className='title'>Register</span>
-                <form onSubmit={handleSubmit}>
-                    <input type='text' placeholder='Username'/>
-                    <input type='email' placeholder='email'/>
-                    <input type='password' placeholder='password'/>
-                    <input style={{display:"none"}} type='file' id='file'/>
-                    <label htmlFor='file'>
-                      <img src={Add} alt=" " />
-                      <span>Add a display image</span>
-                    </label>
-                    <button>Sign up</button>
-                </form>
-                <p>Don't have an account? Sign up</p>
-            </div>
+  return (
+    <div className="formContainer">
+      <div className="formWrapper">
+        <div className="header">
+          <img src={Logo} alt='chattie logo' />
+          <span className='logo'>Chattie</span>
         </div>
-    );
+        <span className="title">Register</span>
+        <form onSubmit={handleSubmit}>
+          <input required type="text" placeholder="Username" />
+          <input required type="email" placeholder="email" />
+          <input required type="password" placeholder="password" />
+          <input required style={{ display: "none" }} type="file" id="file" />
+          <label htmlFor="file">
+            <img src={Add} alt="" />
+            <span>Add a display image</span>
+          </label>
+          <button disabled={loading}>Sign up</button>
+          {loading && "Uploading and compressing the image please wait..."}
+          {err && <span>Something went wrong</span>}
+        </form>
+        <p>
+          You do have an account? <Link to="/register">Login</Link>
+        </p>
+      </div>
+    </div>
+  );
 };
 
 export default Register;
