@@ -19,10 +19,11 @@ const Register = () => {
     const email = e.target[1].value;
     const password = e.target[2].value;
     const file = e.target[3].files[0];
-
+    
     try {
       //Create user
       const res = await createUserWithEmailAndPassword(auth, email, password);
+      console.log(res);
 
       //Create a unique image name
       const date = new Date().getTime();
@@ -72,14 +73,14 @@ const Register = () => {
           <input required type="text" placeholder="Username" />
           <input required type="email" placeholder="email" />
           <input required type="password" placeholder="password" />
-          <input required style={{ display: "none" }} type="file" id="file" />
+          <input required style={{ display: "none" }}  type="file" id="file" />
           <label htmlFor="file">
             <img src={Add} alt="" />
             <span>Add a display image</span>
           </label>
           <button disabled={loading}>Sign up</button>
           {loading && "Uploading and compressing the image please wait..."}
-          {err && <span>Something went wrong</span>}
+         {err && <span>Something went wrong</span>} 
         </form>
         <p>
           You do have an account? <Link to="/register">Login</Link>
@@ -90,3 +91,6 @@ const Register = () => {
 };
 
 export default Register;
+
+// store and retrieve user data using local storage
+

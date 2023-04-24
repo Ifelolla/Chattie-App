@@ -7,13 +7,12 @@ import { getFirestore } from "firebase/firestore";
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBQ0Y8IhgDJNUtQDiutEJpg1j3AP2ZfFAQ",
-  authDomain: "chattie-6962c.firebaseapp.com",
-  projectId: "chattie-6962c",
-  storageBucket: "chattie-6962c.appspot.com",
-  messagingSenderId: "480565068494",
-  appId: "1:480565068494:web:ea4e75fc254c399e93069f",
-  measurementId: "G-0CPV2S30KV"
+  apiKey: "AIzaSyDu0-Qm1vqYtRhDbLBhcl8XL3-XH1Llcdg",
+  authDomain: "chattie-97115.firebaseapp.com",
+  projectId: "chattie-97115",
+  storageBucket: "chattie-97115.appspot.com",
+  messagingSenderId: "172700485908",
+  appId: "1:172700485908:web:1424648c6a983b07471a01"
 };
 
 // Initialize Firebase
